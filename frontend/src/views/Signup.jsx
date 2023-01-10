@@ -1,11 +1,39 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
-const onSubmit = (ev) => {
-  ev.preventDefault();
-};
+import axiosClient from "../axios-client";
+import { useStateContext } from "../contexts/ContextProvider";
 
 export default function Signup() {
+  const nameRef = React.useRef();
+  const emailRef = React.useRef();
+  const passwordref = React.useRef();
+  const passwordConfirmationRef = React.useRef();
+
+  const { setUser, setToken } = useStateContext();
+
+  const onSubmit = (ev) => {
+    ev.preventDefault();
+    const payload = {
+      name: nameRef.current.value,
+      email: emailRef.current.value,
+      password: passwordref.current.value,
+      password_confirmation: passwordConfirmationRef.current.value,
+    };
+    // console.log(payload);
+    axiosClient
+      .post("/api/auth/signup", payload)
+      .then((res) => {
+        setUser(res.data.user);
+        setToken(res.data.token);
+      })
+      .catch((err) => {
+        const response = err.response.data;
+        if (response && response.status === 422) {
+          console.log(response.data.errors);
+        }
+      });
+  };
+
   return (
     <div className="login-signup-form animated fadeInDown">
       <div className="form">
@@ -18,10 +46,14 @@ export default function Signup() {
               ))} */}
           {/* </div>
           )} */}
-          <input type="text" placeholder="Full Name" />
-          <input type="email" placeholder="Email Address" />
-          <input type="password" placeholder="Password" />
-          <input type="password" placeholder="Repeat Password" />
+          <input ref={nameRef} type="text" placeholder="Full Name" />
+          <input ref={emailRef} type="email" placeholder="Email Address" />
+          <input ref={passwordref} type="password" placeholder="Password" />
+          <input
+            ref={passwordConfirmationRef}
+            type="password"
+            placeholder="Repeat Password"
+          />
           <button className="btn btn-block">Signup</button>
           <p className="message">
             Already registered? <Link to="/login">Sign In</Link>
