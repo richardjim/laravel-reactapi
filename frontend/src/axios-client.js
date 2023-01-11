@@ -4,9 +4,7 @@ const axiosClient = axios.create({
 });
 axiosClient.interceptors.request.use((config) => {
     const token = localStorage.getItem("ACCESS_TOKEN");
-    if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-    }
+    config.headers["Authorization"] = `Bearer ${token}`;
     return config;
 });
 
@@ -15,11 +13,16 @@ axiosClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response.status === 401) {
-            localStorage.removeItem("ACCESS_TOKEN");
-        } else {
-            return Promise.reject(error);
+        try {
+            if (error.response.status === 401) {
+                localStorage.removeItem("ACCESS_TOKEN");
+            } else {
+                return Promise.reject(error);
+            }
+        } catch (error) {
+            console.log(error);
         }
+        throw error;
     }
 );
 
